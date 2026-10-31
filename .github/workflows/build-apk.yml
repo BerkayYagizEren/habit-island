@@ -9,6 +9,7 @@ jobs:
   build:
     name: Export Android APK
     runs-on: ubuntu-latest
+    permissions: write-all
 
     steps:
       - name: Checkout Repository
