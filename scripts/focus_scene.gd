@@ -38,6 +38,13 @@ const SPARK_RISE := 150.0
 const GLOW_RADII: Array[float] = [150.0, 135.0, 120.0, 105.0, 90.0, 75.0, 60.0, 45.0]
 const FLICKER_SPEED := 9.0
 const GRASS_TUFTS: Array[float] = [0.04, 0.17, 0.33, 0.47, 0.58, 0.82, 0.95]
+# Luffy odaklanırken çevresinde yavaşça nabız atan Haki halkaları.
+const HAKI_COLOR := Color(0.62, 0.25, 0.95, 0.5)
+const HAKI_CENTER := Vector2(10, -40)
+const HAKI_RING_COUNT := 3
+const HAKI_RADIUS := 150.0
+const HAKI_SPEED := 0.35
+const HAKI_WIDTH := 4.0
 
 var stage_rect := Rect2():
 	set(value):
@@ -46,6 +53,7 @@ var stage_rect := Rect2():
 
 var _time := 0.0
 var _stars: Array[Vector3] = []
+var _locked_in := false
 
 @onready var _monkey: Node2D = %SonicMonkey
 
@@ -66,6 +74,7 @@ func _process(delta: float) -> void:
 
 
 func set_locked_in(locked_in: bool) -> void:
+	_locked_in = locked_in
 	_monkey.writing = locked_in
 
 
@@ -93,6 +102,8 @@ func _draw() -> void:
 	_draw_ground(center.y)
 	var fire := center + FIRE_OFFSET * art_scale
 	_draw_glow(fire + Vector2(0, -30) * art_scale, art_scale)
+	if _locked_in:
+		_draw_haki(center + (MONKEY_OFFSET + HAKI_CENTER) * art_scale, art_scale)
 	_draw_log(center + (MONKEY_OFFSET + LOG_OFFSET) * art_scale, art_scale)
 	_draw_campfire(fire, art_scale)
 	_draw_grass(center.y)
@@ -138,6 +149,13 @@ func _draw_glow(center: Vector2, art_scale: float) -> void:
 	var pulse := 1.0 + sin(_time * FLICKER_SPEED) * 0.03
 	for radius: float in GLOW_RADII:
 		draw_circle(center, radius * art_scale * pulse, GLOW_COLOR, true, -1.0, true)
+
+
+func _draw_haki(center: Vector2, art_scale: float) -> void:
+	for ring: int in HAKI_RING_COUNT:
+		var progress := fmod(_time * HAKI_SPEED + float(ring) / HAKI_RING_COUNT, 1.0)
+		var color := Color(HAKI_COLOR, HAKI_COLOR.a * (1.0 - progress))
+		draw_arc(center, HAKI_RADIUS * progress * art_scale, 0.0, TAU, 40, color, HAKI_WIDTH * art_scale, true)
 
 
 func _draw_log(center: Vector2, art_scale: float) -> void:

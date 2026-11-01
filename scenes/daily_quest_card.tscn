@@ -18,14 +18,15 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"PriceLabel"
 theme_override_font_sizes/font_size = 24
-text = "Get one small win today"
+text = "Günün Korsan Görevi: Grand Line'da zafer kazan!"
+autowrap_mode = 3
 
 [node name="RewardLabel" type="Label" parent="Column/Heading"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"PriceLabel"
 theme_override_font_sizes/font_size = 24
-text = "🍌 +20"
+text = "+20 🍖"
 
 [node name="QuestLabel" type="Label" parent="Column"]
 unique_name_in_owner = true

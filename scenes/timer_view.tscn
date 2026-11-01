@@ -54,7 +54,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
 theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 44
-text = "Focus With Monke"
+text = "Focus With Luffy"
 horizontal_alignment = 1
 
 [node name="Stage" type="Control" parent="Margin/Column"]
@@ -69,8 +69,9 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.99, 0.88, 0.55, 1)
 theme_override_colors/font_outline_color = Color(0.99, 0.88, 0.55, 1)
 theme_override_font_sizes/font_size = 28
-text = "Monke is ready."
+text = "Luffy is ready to train."
 horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="TimeLabel" type="Label" parent="Margin/Column"]
 unique_name_in_owner = true

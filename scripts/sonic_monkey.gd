@@ -1,6 +1,8 @@
 extends Node2D
 
-# Hız kahramanı esintili maymun; variant renkleri, dikenleri ve ayakkabıları belirler.
+# Hasır Şapka tayfasının maymunları; variant renkleri, saçı ve kıyafeti belirler. Ana karakter
+# Luffy'dir: eski kayıtlardaki "monkey" eşyaları bozulmasın diye kimliği "sonic" olarak kalır.
+# Diğer tayfa üyelerine özgü çizimler crew_monkey.gd'dedir.
 # Tamamı kodla çizilir; koordinatlar gövdeye göredir ve yüz sağa bakar.
 
 enum Pose { STANDING, WRITING }
@@ -8,7 +10,9 @@ enum Pose { STANDING, WRITING }
 const INK := Color("#0f172a")
 const SKIN := Color("#fde2b8")
 const WHITE := Color("#ffffff")
-const BANDANA := Color("#ef4444")
+const STRAW_COLOR := Color("#facc15")
+const HAT_BAND_COLOR := Color("#dc2626")
+const SCAR_COLOR := Color("#7f1d1d")
 const PAPER := Color("#f8fafc")
 const PAPER_LINE := Color("#94a3b8")
 const COVER := Color("#7c3aed")
@@ -16,9 +20,9 @@ const PENCIL := Color("#fbbf24")
 
 const OUTLINE := 3.0
 const ELLIPSE_POINTS := 24
-const QUILLS: Array[Vector2] = [
-	Vector2(16, -26), Vector2(-14, -60), Vector2(-12, -32), Vector2(-50, -46), Vector2(-27, -15),
-	Vector2(-64, -12), Vector2(-31, 3), Vector2(-56, 26), Vector2(-22, 21), Vector2(4, 12),
+const LUFFY_HAIR: Array[Vector2] = [
+	Vector2(24, -20), Vector2(-30, -22), Vector2(-42, -8), Vector2(-32, -4), Vector2(-40, 10),
+	Vector2(-28, 8), Vector2(-30, 22), Vector2(-14, 14), Vector2(6, 8),
 ]
 # Dread'ler ayrı parçalardır; başın arkasından aşağı sarkar.
 const DREAD_CAP: Array[Vector2] = [
@@ -62,32 +66,35 @@ const HOVER_JET_LENGTH := 10.0
 const HOVER_JET_FLICKER := 4.0
 const HOVER_JET_SPEED := 14.0
 
-const DEFAULT_VARIANT := "sonic"
+const LUFFY_VARIANT := "sonic"
+const DEFAULT_VARIANT := LUFFY_VARIANT
 const VARIANTS := {
-	"sonic": {
-		"fur": Color("#2563eb"), "fur_dark": Color("#1d4ed8"), "iris": Color("#16a34a"), "brow": INK,
-		"shoe": Color("#dc2626"), "strap": WHITE, "buckle": Color("#facc15"), "sole": WHITE,
-		"quills": QUILLS, "bandana": true,
+	LUFFY_VARIANT: {
+		"fur": Color("#b5773f"), "fur_dark": Color("#8a5629"), "iris": INK, "brow": INK,
+		"shoe": Color("#a16207"), "strap": Color("#fde68a"), "buckle": Color("#a16207"), "sole": Color("#78350f"),
+		"quills": LUFFY_HAIR, "hair": INK, "hand": SKIN, "shirt": Color("#dc2626"), "waist": Color("#2563eb"),
+		"thigh": Color("#2563eb"), "thigh_dark": Color("#1d4ed8"),
+		"straw_hat": true, "scar": true, "grin": true, "rubber": true,
 	},
 	"knuckles": {
 		"fur": Color("#dc2626"), "fur_dark": Color("#b91c1c"), "iris": Color("#7c3aed"), "brow": INK,
 		"shoe": Color("#facc15"), "strap": Color("#22c55e"), "buckle": WHITE, "sole": Color("#15803d"),
-		"quills": DREAD_CAP, "bandana": false,
+		"quills": DREAD_CAP,
 	},
 	"tails": {
 		"fur": Color("#fbbf24"), "fur_dark": Color("#f97316"), "iris": Color("#0284c7"), "brow": INK,
 		"shoe": Color("#dc2626"), "strap": WHITE, "buckle": Color("#facc15"), "sole": WHITE,
-		"quills": TUFT, "bandana": false,
+		"quills": TUFT,
 	},
 	"shadow": {
 		"fur": Color("#27272a"), "fur_dark": Color("#18181b"), "iris": Color("#dc2626"), "brow": Color("#ef4444"),
 		"shoe": WHITE, "strap": Color("#dc2626"), "buckle": Color("#facc15"), "sole": Color("#dc2626"),
-		"quills": UP_SPIKES, "bandana": false,
+		"quills": UP_SPIKES,
 	},
 	"super": {
 		"fur": Color("#fde047"), "fur_dark": Color("#f59e0b"), "iris": Color("#be123c"), "brow": INK,
 		"shoe": Color("#dc2626"), "strap": WHITE, "buckle": Color("#facc15"), "sole": WHITE,
-		"quills": FLAME_SPIKES, "bandana": false,
+		"quills": FLAME_SPIKES, "aura": AURA_COLOR,
 	},
 }
 
@@ -105,6 +112,16 @@ const HOP_SECONDS := 0.17
 const SQUASH_SCALE := Vector2(1.18, 0.82)
 const STRETCH_SCALE := Vector2(0.88, 1.14)
 const SETTLE_SECONDS := 0.35
+# Gomu Gomu: kauçuk kollar zıplarken yukarı uzar. Anahtarlar kolun dinlenme ve uzamış halidir.
+const BACK_ELBOW := Vector2(-40, 12)
+const BACK_ELBOW_STRETCHED := Vector2(-70, -40)
+const BACK_HAND := Vector2(-31, 26)
+const BACK_HAND_STRETCHED := Vector2(-92, -110)
+const FRONT_ELBOW := Vector2(46, -10)
+const FRONT_ELBOW_STRETCHED := Vector2(72, -50)
+const FRONT_HAND := Vector2(44, -36)
+const FRONT_HAND_STRETCHED := Vector2(96, -130)
+const OUTFIT_WAIST_RATIO := 0.62
 
 @export var pose := Pose.STANDING:
 	set(value):
@@ -113,8 +130,9 @@ const SETTLE_SECONDS := 0.35
 
 @export var variant := DEFAULT_VARIANT:
 	set(value):
-		variant = value if VARIANTS.has(value) else DEFAULT_VARIANT
-		_look = VARIANTS[variant]
+		var table := _variant_table()
+		variant = value if table.has(value) else table.keys()[0]
+		_look = table[variant]
 		queue_redraw()
 
 var _look: Dictionary = VARIANTS[DEFAULT_VARIANT]
@@ -122,6 +140,8 @@ var _time := 0.0
 var _next_blink := randf_range(BLINK_MIN_GAP, BLINK_MAX_GAP)
 var _hop := 0.0
 var _squash := Vector2.ONE
+# Dokunma hareketinin ilerleyişi: 0 dinlenme, 1 hareketin tepesi.
+var _action := 0.0
 var _body := Transform2D.IDENTITY
 var _bounce_tween: Tween
 
@@ -149,10 +169,13 @@ func play_bounce() -> void:
 	if _bounce_tween:
 		_bounce_tween.kill()
 	_hop = 0.0
+	_action = 0.0
 	_bounce_tween = create_tween()
 	_bounce_tween.tween_property(self, "_hop", -HOP_HEIGHT, HOP_SECONDS).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_bounce_tween.parallel().tween_property(self, "_squash", STRETCH_SCALE, HOP_SECONDS)
+	_bounce_tween.parallel().tween_property(self, "_action", 1.0, HOP_SECONDS)
 	_bounce_tween.tween_property(self, "_hop", 0.0, HOP_SECONDS).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_bounce_tween.parallel().tween_property(self, "_action", 0.0, HOP_SECONDS)
 	_bounce_tween.tween_property(self, "_squash", SQUASH_SCALE, HOP_SECONDS / 2.0)
 	_bounce_tween.tween_property(self, "_squash", Vector2.ONE, SETTLE_SECONDS).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
@@ -167,7 +190,7 @@ func _body_transform() -> Transform2D:
 func _draw() -> void:
 	_body = _body_transform()
 	draw_set_transform_matrix(_body)
-	if variant == "super":
+	if _look.has("aura"):
 		_draw_aura()
 	if pose == Pose.WRITING:
 		_draw_writing()
@@ -177,33 +200,45 @@ func _draw() -> void:
 
 func _draw_standing() -> void:
 	_draw_tail(PackedVector2Array([Vector2(-12, 16), Vector2(-34, 22), Vector2(-48, 8), Vector2(-42, -8), Vector2(-30, -6)]))
+	_draw_behind_body()
+	var kick := _front_foot_offset()
+	var stretch := _action if _look.get("rubber", false) else 0.0
 	_draw_limb(Vector2(-9, 22), Vector2(-15, 44), 15.0, _look.fur_dark)
-	_draw_limb(Vector2(9, 22), Vector2(15, 44), 15.0, _look.fur)
+	_draw_limb(Vector2(9, 22), Vector2(15, 44) + kick, 15.0, _look.fur)
 	_draw_sneaker(Vector2(-16, 47))
-	_draw_sneaker(Vector2(14, 47))
-	_draw_limb(Vector2(-25, -8), Vector2(-40, 12), 15.0, _look.fur_dark)
-	_draw_limb(Vector2(-40, 12), Vector2(-31, 26), 13.0, _look.fur_dark)
-	_shape(_ellipse(Vector2(-31, 28), Vector2(9, 9)), WHITE)
+	_draw_sneaker(Vector2(14, 47) + kick)
+	if _look.has("waist"):
+		_draw_limb(Vector2(-9, 22), Vector2(-12, 33), 18.0, _look.waist)
+		_draw_limb(Vector2(9, 22), Vector2(9, 22).lerp(Vector2(15, 44) + kick, 0.5), 18.0, _look.waist)
+	var back_elbow := BACK_ELBOW.lerp(BACK_ELBOW_STRETCHED, stretch)
+	var back_hand := BACK_HAND.lerp(BACK_HAND_STRETCHED, stretch)
+	_draw_limb(Vector2(-25, -8), back_elbow, 15.0, _look.get("sleeve_dark", _look.fur_dark))
+	_draw_limb(back_elbow, back_hand, 13.0, _look.get("sleeve_dark", _look.fur_dark))
+	_shape(_ellipse(back_hand + Vector2(0, 2), Vector2(9, 9)), _look.get("hand", WHITE))
 	_draw_torso(PackedVector2Array([Vector2(-28, -18), Vector2(28, -18), Vector2(14, 26), Vector2(-14, 26)]), Vector2(0, -2))
 	# Kaldırılmış kol kasları gösterir.
-	_draw_limb(Vector2(25, -8), Vector2(46, -10), 17.0, _look.fur)
-	_draw_limb(Vector2(46, -10), Vector2(44, -34), 14.0, _look.fur)
-	_shape(_ellipse(Vector2(36, -13), Vector2(11, 8)), _look.fur_dark)
-	_shape(_ellipse(Vector2(44, -38), Vector2(10, 10)), WHITE)
+	var front_elbow := FRONT_ELBOW.lerp(FRONT_ELBOW_STRETCHED, stretch)
+	var front_hand := FRONT_HAND.lerp(FRONT_HAND_STRETCHED, stretch)
+	_draw_limb(Vector2(25, -8), front_elbow, 17.0, _look.get("sleeve", _look.fur))
+	_draw_limb(front_elbow, front_hand, 14.0, _look.get("sleeve", _look.fur))
+	_shape(_ellipse(Vector2(25, -8).lerp(front_elbow, 0.5), Vector2(11, 8)), _look.get("sleeve_dark", _look.fur_dark))
+	_draw_held_item(front_hand)
+	_shape(_ellipse(front_hand + Vector2(0, -2), Vector2(10, 10)), _look.get("hand", WHITE))
 	_draw_head(Vector2(0, -46), 0.0)
+	_draw_action_effects()
 
 
 func _draw_writing() -> void:
 	var stroke := sin(_time * WRITE_SPEED) * WRITE_REACH if writing else 0.0
 	_draw_tail(PackedVector2Array([Vector2(-20, -6), Vector2(-46, -6), Vector2(-62, -22), Vector2(-54, -38), Vector2(-42, -34)]))
 	# Arkadaki bacak ve defteri tutan kol.
-	_draw_limb(Vector2(0, -8), Vector2(58, -16), 16.0, _look.fur_dark)
+	_draw_limb(Vector2(0, -8), Vector2(58, -16), 16.0, _look.get("thigh_dark", _look.fur_dark))
 	_draw_limb(Vector2(58, -16), Vector2(70, 32), 14.0, _look.fur_dark)
 	_draw_sneaker(Vector2(72, 36))
 	_draw_limb(Vector2(16, -50), Vector2(50, -36), 12.0, _look.fur_dark)
 	_draw_torso(PackedVector2Array([Vector2(-24, -4), Vector2(16, -4), Vector2(26, -56), Vector2(-20, -60)]), Vector2(6, -32))
 	# Öndeki bacak.
-	_draw_limb(Vector2(-4, -6), Vector2(40, -12), 18.0, _look.fur)
+	_draw_limb(Vector2(-4, -6), Vector2(40, -12), 18.0, _look.get("thigh", _look.fur))
 	_draw_limb(Vector2(40, -12), Vector2(38, 34), 15.0, _look.fur)
 	_draw_sneaker(Vector2(38, 38))
 	_draw_notebook(stroke)
@@ -213,21 +248,37 @@ func _draw_writing() -> void:
 	_shape(_ellipse(Vector2(7, -38), Vector2(9, 12)), _look.fur_dark)
 	_draw_limb(Vector2(14, -24), hand, 13.0, _look.fur)
 	_draw_pencil(hand)
-	_shape(_ellipse(hand, Vector2(9, 9)), WHITE)
+	_shape(_ellipse(hand, Vector2(9, 9)), _look.get("hand", WHITE))
 	_draw_head(Vector2(10, -88), 0.16)
 
 
 func _draw_torso(points: PackedVector2Array, chest: Vector2) -> void:
+	if _look.has("shirt"):
+		# Köşeler pozdan bağımsız olarak üst sol, üst sağ, alt sağ, alt sol sırasına getirilir.
+		_draw_outfit(points if pose == Pose.STANDING else PackedVector2Array([points[3], points[2], points[1], points[0]]))
+		return
 	_shape(points, _look.fur)
 	_shape(_ellipse(chest + Vector2(-9, -3), Vector2(10, 9)), SKIN)
 	_shape(_ellipse(chest + Vector2(9, -3), Vector2(10, 9)), SKIN)
 	_shape(_ellipse(chest + Vector2(0, 15), Vector2(10, 10)), SKIN)
 
 
+func _draw_outfit(corners: PackedVector2Array) -> void:
+	var left_waist := corners[0].lerp(corners[3], OUTFIT_WAIST_RATIO)
+	var right_waist := corners[1].lerp(corners[2], OUTFIT_WAIST_RATIO)
+	_shape(corners, _look.shirt)
+	_shape(PackedVector2Array([
+		corners[0].lerp(corners[1], 0.3), corners[0].lerp(corners[1], 0.7), left_waist.lerp(right_waist, 0.5),
+	]), _look.get("chest", SKIN))
+	_shape(PackedVector2Array([left_waist, right_waist, corners[2], corners[3]]), _look.waist)
+	if _look.has("sash"):
+		_shape(PackedVector2Array([
+			left_waist, right_waist, right_waist.lerp(corners[2], 0.45), left_waist.lerp(corners[3], 0.45),
+		]), _look.sash)
+
+
 func _draw_head(center: Vector2, tilt: float) -> void:
 	draw_set_transform_matrix(_body * Transform2D(tilt, center))
-	if _look.bandana:
-		_draw_bandana_tails()
 	_draw_quills()
 	_shape(_ellipse(Vector2(-29, 2), Vector2(12, 12)), _look.fur)
 	_shape(_ellipse(Vector2(-29, 2), Vector2(6, 6)), SKIN)
@@ -240,10 +291,37 @@ func _draw_head(center: Vector2, tilt: float) -> void:
 	draw_line(Vector2(-9, -15), Vector2(9, -9), _look.brow, 4.0, true)
 	draw_line(Vector2(27, -15), Vector2(11, -9), _look.brow, 4.0, true)
 	draw_circle(Vector2(12, 7), 3.0, INK, true, -1.0, true)
-	draw_polyline(PackedVector2Array([Vector2(0, 17), Vector2(8, 20), Vector2(17, 18), Vector2(23, 13)]), INK, 2.5, true)
-	if _look.bandana:
-		_shape(PackedVector2Array([Vector2(-29, -13), Vector2(-16, -22), Vector2(4, -26), Vector2(26, -20), Vector2(29, -13), Vector2(5, -18), Vector2(-14, -15)]), BANDANA)
+	if _look.get("grin", false):
+		_draw_grin()
+	else:
+		draw_polyline(PackedVector2Array([Vector2(0, 17), Vector2(8, 20), Vector2(17, 18), Vector2(23, 13)]), INK, 2.5, true)
+	_draw_head_costume()
 	draw_set_transform_matrix(_body)
+
+
+func _draw_head_costume() -> void:
+	if _look.get("scar", false):
+		_draw_scar()
+	if _look.get("straw_hat", false):
+		_draw_straw_hat()
+
+
+func _draw_grin() -> void:
+	_shape(PackedVector2Array([Vector2(-5, 13), Vector2(26, 9), Vector2(22, 20), Vector2(12, 26), Vector2(1, 23)]), WHITE)
+	draw_line(Vector2(-2, 17), Vector2(24, 15), INK, 1.5, true)
+
+
+# Sol gözün altındaki dikişli yara izi.
+func _draw_scar() -> void:
+	draw_line(Vector2(16, 6), Vector2(27, 6), SCAR_COLOR, 2.0, true)
+	for x: float in [19.0, 24.0]:
+		draw_line(Vector2(x, 3), Vector2(x, 9), SCAR_COLOR, 1.5, true)
+
+
+func _draw_straw_hat() -> void:
+	_shape(PackedVector2Array([Vector2(-24, -22), Vector2(-20, -46), Vector2(-8, -52), Vector2(10, -52), Vector2(22, -46), Vector2(26, -22)]), STRAW_COLOR)
+	_shape(PackedVector2Array([Vector2(-24, -22), Vector2(-22, -33), Vector2(24, -33), Vector2(26, -22)]), HAT_BAND_COLOR)
+	_shape(_ellipse(Vector2(1, -20), Vector2(46, 9)), STRAW_COLOR)
 
 
 func _draw_quills() -> void:
@@ -255,7 +333,7 @@ func _draw_quills() -> void:
 		for tip: int in FLAME_TIPS:
 			points[tip].x += sin(_time * FLAME_SPEED + tip) * FLAME_FLICKER
 			points[tip].y += cos(_time * FLAME_SPEED * 1.3 + tip) * FLAME_FLICKER
-	_shape(points, _look.fur_dark)
+	_shape(points, _look.get("hair", _look.fur_dark))
 	if variant == "shadow":
 		for stripe: Vector4 in SPIKE_STRIPES:
 			draw_line(Vector2(stripe.x, stripe.y), Vector2(stripe.z, stripe.w), _look.strap, SPIKE_STRIPE_WIDTH, true)
@@ -264,7 +342,7 @@ func _draw_quills() -> void:
 func _draw_aura() -> void:
 	var pulse := sin(_time * AURA_SPEED) * AURA_PULSE
 	for radius: float in AURA_RADII:
-		draw_circle(AURA_CENTER, radius + pulse, AURA_COLOR, true, -1.0, true)
+		draw_circle(AURA_CENTER, radius + pulse, _look.aura, true, -1.0, true)
 
 
 func _draw_eyes() -> void:
@@ -280,11 +358,6 @@ func _draw_eyes() -> void:
 	draw_circle(Vector2(21, -3), 4.5, _look.iris, true, -1.0, true)
 	draw_circle(Vector2(6, -3), 2.2, INK, true, -1.0, true)
 	draw_circle(Vector2(22, -3), 2.2, INK, true, -1.0, true)
-
-
-func _draw_bandana_tails() -> void:
-	var flutter := sin(_time * 4.0) * 2.0
-	_shape(PackedVector2Array([Vector2(-28, -14), Vector2(-58, -30 + flutter), Vector2(-52, -14 + flutter), Vector2(-27, -8)]), BANDANA)
 
 
 func _draw_tail(points: PackedVector2Array) -> void:
@@ -341,6 +414,27 @@ func _draw_pencil(hand: Vector2) -> void:
 	var tip := hand + Vector2(16, 12)
 	draw_line(hand + Vector2(-8, -10), tip, INK, 7.0, true)
 	draw_line(hand + Vector2(-8, -10), tip, PENCIL, 4.0, true)
+
+
+# Alt sınıfların (tayfa üyeleri) doldurduğu çizim kancaları.
+func _variant_table() -> Dictionary:
+	return VARIANTS
+
+
+func _front_foot_offset() -> Vector2:
+	return Vector2.ZERO
+
+
+func _draw_behind_body() -> void:
+	pass
+
+
+func _draw_held_item(_hand: Vector2) -> void:
+	pass
+
+
+func _draw_action_effects() -> void:
+	pass
 
 
 func _shape(points: PackedVector2Array, fill: Color) -> void:

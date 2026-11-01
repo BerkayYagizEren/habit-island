@@ -1,7 +1,7 @@
 extends CanvasLayer
 
 const CARD_STYLES: Array[StringName] = [&"PastelMint", &"PastelPeach", &"PastelSky", &"PastelRose", &"PastelLemon", &"PastelLilac"]
-const SONIC_MONKEY := preload("res://scripts/sonic_monkey.gd")
+const CREW_MONKEY := preload("res://scripts/crew_monkey.gd")
 const MONKEY_ICON_SIZE := Vector2(64, 72)
 const MONKEY_ICON_SCALE := Vector2(0.4, 0.4)
 const MONKEY_ICON_OFFSET := Vector2(32, 44)
@@ -147,7 +147,7 @@ func _create_monkey_icon(variant: String) -> Control:
 	var holder := Control.new()
 	holder.custom_minimum_size = MONKEY_ICON_SIZE
 	holder.mouse_filter = Control.MOUSE_FILTER_PASS
-	var monkey: Node2D = SONIC_MONKEY.new(variant)
+	var monkey: Node2D = CREW_MONKEY.create(variant)
 	monkey.position = MONKEY_ICON_OFFSET
 	monkey.scale = MONKEY_ICON_SCALE
 	holder.add_child(monkey)

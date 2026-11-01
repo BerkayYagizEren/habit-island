@@ -5,7 +5,7 @@ Alışkanlıklarını tamamladıkça muz ve XP kazandığın, kazandıklarınla 
 ## Özellikler
 
 - **Alışkanlıklar:** Alışkanlık ekle, sil ve her gün tamamla. Her tamamlama 5 muz ve 10 XP kazandırır, günlük seriler takip edilir.
-- **Focus With Monke:** Kamp ateşi başında not alan maymunla 15, 25, 45 veya 60 dakikalık oturumlar. STOP sayacı durdurup sıfırlar; ödül yalnızca biten oturuma verilir. Odaklanılan her dakika 1 muz ve 1 XP kazandırır. Kalan süre gerçek saatten hesaplandığı için telefon kilitlenip açıldığında sayaç geride kalmaz.
+- **Focus With Luffy:** Kamp ateşi başında Haki çalışan Hasır Şapkalı Luffy ile 15, 25, 45 veya 60 dakikalık oturumlar. STOP sayacı durdurup sıfırlar; ödül yalnızca biten oturuma verilir. Odaklanılan her dakika 1 muz ve 1 XP kazandırır. Kalan süre gerçek saatten hesaplandığı için telefon kilitlenip açıldığında sayaç geride kalmaz.
 - **Today's Progress:** Bugün tamamlanan alışkanlıklar, odaklanılan dakikalar ve kazanılan muzlar; gün değişince sıfırlanır.
 - **Günün Küçük Zaferi:** Gece yarısına kadar süren, değiştirilebilir mini görev. Tamamlanınca 20 muz ve 20 XP kazandırır.
 - **CHECK-IN:** Günde bir kez 15 muz ve kutlama sesi.

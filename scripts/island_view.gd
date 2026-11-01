@@ -74,17 +74,33 @@ const CLOUD_PUFFS: Array[Vector3] = [
 	Vector3(-44, 4, 20), Vector3(-18, -10, 28), Vector3(16, -14, 32), Vector3(46, 2, 22), Vector3(0, 8, 26),
 ]
 
-const BOAT_OFFSET := Vector2(-240, 480)
+const BOAT_OFFSET := Vector2(-240, 490)
 const BOAT_CORNER_PULL := 2.0
 const BOAT_BOB := 4.0
 const BOAT_BOB_SPEED := 1.5
 const BOAT_ROLL := 0.08
 const BOAT_ROLL_SPEED := 1.1
-const HULL_COLOR := Color("#92400e")
+const HULL_COLOR := Color("#c28a3c")
 const HULL_DARK_COLOR := Color("#78350f")
 const MAST_COLOR := Color("#57300f")
 const SAIL_COLOR := Color("#fff7ed")
-const SAIL_STRIPE_COLOR := Color("#ef4444")
+const RAIL_COLOR := Color("#f8fafc")
+const SHEEP_WOOL_COLOR := Color("#fefce8")
+const SHEEP_FACE_COLOR := Color("#fde2b8")
+const SHEEP_HORN_COLOR := Color("#a16207")
+const STRAW_COLOR := Color("#facc15")
+const HAT_BAND_COLOR := Color("#dc2626")
+# x, y: pruvadaki yün topları; z: yarıçap.
+const SHEEP_WOOL: Array[Vector3] = [
+	Vector3(58, -24, 9), Vector3(70, -32, 10), Vector3(82, -24, 9), Vector3(56, -12, 8), Vector3(68, -14, 9),
+]
+
+# x, y: adanın merkezine göre konum; z: sallanma evresi.
+const BARRELS: Array[Vector3] = [
+	Vector3(-85, 478, 0.0), Vector3(50, 488, 1.7), Vector3(300, -432, 3.1),
+]
+const BARREL_COLOR := Color("#a16207")
+const BARREL_BAND_COLOR := Color("#57534e")
 
 const DECOR_SEED := 23
 const SHORE_INNER_RADII := Vector2(304, 380)
@@ -199,7 +215,8 @@ func _draw() -> void:
 	var foam_scale := FOAM_BASE_SCALE + sin(_time * FOAM_SPEED) * FOAM_PULSE
 	_draw_surf_lines(center)
 	_draw_foam_rings(center)
-	_draw_boat(center + _boat_offset())
+	_draw_going_merry(center + _boat_offset())
+	_draw_barrels(center)
 	var sand_rim := center + SAND_RIM_OFFSET * _view_zoom
 	var size_scale := Vector2(island_scale, island_scale)
 	draw_set_transform(sand_rim, 0.0, size_scale * foam_scale)
@@ -267,19 +284,67 @@ func _draw_clouds(center: Vector2) -> void:
 			draw_circle(spot + Vector2(puff.x, puff.y) * cloud.w, puff.z * cloud.w, CLOUD_COLOR, true, -1.0, true)
 
 
-func _draw_boat(anchor: Vector2) -> void:
+func _draw_going_merry(anchor: Vector2) -> void:
 	var bob := sin(_time * BOAT_BOB_SPEED) * BOAT_BOB
 	var roll := sin(_time * BOAT_ROLL_SPEED) * BOAT_ROLL
 	var zoom := Vector2(_view_zoom, _view_zoom)
 	draw_set_transform(anchor, 0.0, zoom)
 	draw_arc(Vector2(0, -8), 44.0 + bob, 0.15 * PI, 0.85 * PI, 14, FOAM_COLOR, 3.0, true)
 	draw_set_transform(anchor + Vector2(0, bob) * _view_zoom, roll, zoom)
-	draw_line(Vector2(0, 8), Vector2(0, -56), INK, 7.0, true)
-	draw_line(Vector2(0, 8), Vector2(0, -56), MAST_COLOR, 4.0, true)
-	_draw_outlined(PackedVector2Array([Vector2(5, -54), Vector2(36, -6), Vector2(5, -6)]), SAIL_COLOR)
-	_draw_outlined(PackedVector2Array([Vector2(-5, -46), Vector2(-5, -6), Vector2(-28, -6)]), SAIL_STRIPE_COLOR)
-	_draw_outlined(PackedVector2Array([Vector2(-38, 2), Vector2(40, 2), Vector2(28, 24), Vector2(-26, 24)]), HULL_COLOR)
-	draw_line(Vector2(-33, 11), Vector2(35, 11), HULL_DARK_COLOR, 3.0, true)
+	draw_line(Vector2(0, 8), Vector2(0, -74), INK, 7.0, true)
+	draw_line(Vector2(0, 8), Vector2(0, -74), MAST_COLOR, 4.0, true)
+	_draw_outlined(PackedVector2Array([Vector2(0, -74), Vector2(-22, -80), Vector2(0, -86)]), INK)
+	_draw_outlined(PackedVector2Array([Vector2(-32, -66), Vector2(32, -66), Vector2(38, -14), Vector2(-38, -14)]), SAIL_COLOR)
+	_draw_jolly_roger(Vector2(0, -40))
+	_draw_outlined(PackedVector2Array([Vector2(-58, -8), Vector2(58, -2), Vector2(44, 26), Vector2(-44, 26)]), HULL_COLOR)
+	draw_line(Vector2(-51, 5), Vector2(51, 9), HULL_DARK_COLOR, 3.0, true)
+	draw_line(Vector2(-56, -12), Vector2(50, -7), INK, 5.0, true)
+	draw_line(Vector2(-56, -12), Vector2(50, -7), RAIL_COLOR, 2.5, true)
+	_draw_sheep_head()
+	draw_set_transform(Vector2.ZERO)
+
+
+func _draw_jolly_roger(center: Vector2) -> void:
+	for side: float in [-1.0, 1.0]:
+		draw_line(center + Vector2(-side * 20, -6), center + Vector2(side * 20, 18), INK, 5.0, true)
+	draw_circle(center + Vector2(0, 4), 13.0, INK, true, -1.0, true)
+	draw_rect(Rect2(center + Vector2(-7, 12), Vector2(14, 8)), INK)
+	for side: float in [-1.0, 1.0]:
+		draw_circle(center + Vector2(side * 5, 4), 3.0, SAIL_COLOR, true, -1.0, true)
+	_draw_outlined(PackedVector2Array([center + Vector2(-9, -6), center + Vector2(-7, -19), center + Vector2(7, -19), center + Vector2(9, -6)]), STRAW_COLOR)
+	draw_rect(Rect2(center + Vector2(-8, -10), Vector2(16, 3)), HAT_BAND_COLOR)
+	draw_line(center + Vector2(-18, -6), center + Vector2(18, -6), INK, 5.0, true)
+	draw_line(center + Vector2(-17, -6), center + Vector2(17, -6), STRAW_COLOR, 2.5, true)
+
+
+# Going Merry'nin koyun başlı pruvası.
+func _draw_sheep_head() -> void:
+	for puff: Vector3 in SHEEP_WOOL:
+		draw_circle(Vector2(puff.x, puff.y), puff.z + 2.5, INK, true, -1.0, true)
+	for puff: Vector3 in SHEEP_WOOL:
+		draw_circle(Vector2(puff.x, puff.y), puff.z, SHEEP_WOOL_COLOR, true, -1.0, true)
+	draw_arc(Vector2(60, -30), 7.0, 0.3 * PI, 2.0 * PI, 14, INK, 5.0, true)
+	draw_arc(Vector2(60, -30), 7.0, 0.3 * PI, 2.0 * PI, 14, SHEEP_HORN_COLOR, 3.0, true)
+	draw_circle(Vector2(78, -20), 10.0, INK, true, -1.0, true)
+	draw_circle(Vector2(78, -20), 8.0, SHEEP_FACE_COLOR, true, -1.0, true)
+	draw_circle(Vector2(80, -23), 2.0, INK, true, -1.0, true)
+	draw_arc(Vector2(79, -18), 4.0, 0.1 * PI, 0.8 * PI, 8, INK, 1.5, true)
+
+
+func _draw_barrels(center: Vector2) -> void:
+	var pull := pow(_island_scale * _view_zoom, BOAT_CORNER_PULL)
+	for barrel: Vector3 in BARRELS:
+		var bob := sin(_time * BOAT_BOB_SPEED + barrel.z) * BOAT_BOB
+		var anchor := center + Vector2(barrel.x * pull, barrel.y)
+		var zoom := Vector2(_view_zoom, _view_zoom)
+		draw_set_transform(anchor, 0.0, zoom)
+		draw_arc(Vector2(0, -4), 22.0 + bob * 0.5, 0.15 * PI, 0.85 * PI, 10, FOAM_COLOR, 2.5, true)
+		draw_set_transform(anchor + Vector2(0, bob) * _view_zoom, sin(_time * BOAT_ROLL_SPEED + barrel.z) * BOAT_ROLL * 2.0, zoom)
+		_draw_outlined(PackedVector2Array([
+			Vector2(-11, -17), Vector2(11, -17), Vector2(16, -6), Vector2(16, 6), Vector2(11, 15), Vector2(-11, 15), Vector2(-16, 6), Vector2(-16, -6),
+		]), BARREL_COLOR)
+		for y: float in [-9.0, 7.0]:
+			draw_line(Vector2(-15, y), Vector2(15, y), BARREL_BAND_COLOR, 3.0, true)
 	draw_set_transform(Vector2.ZERO)
 
 

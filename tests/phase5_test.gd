@@ -204,8 +204,8 @@ func _test_home_screen(main: Control) -> void:
 	var progress: Control = view.get_node("Margin/Column/TodayProgress")
 	var card: Control = view.get_node("Margin/Column/DailyQuestCard")
 	_check("Today's Progress" in _all_text(progress), "şerit başlığı")
-	_check("Get one small win today" in _all_text(card), "görev başlığı")
-	_check(card.get_node("%RewardLabel").text == "🍌 +20", "ödül etiketi")
+	_check("Günün Korsan Görevi: Grand Line'da zafer kazan!" in _all_text(card), "görev başlığı")
+	_check(card.get_node("%RewardLabel").text == "+20 🍖", "ödül etiketi")
 	_check(card.get_node("%QuestLabel").text == _dm.data.daily_quest.text, "görev metni")
 	var countdown: String = card.get_node("%CountdownLabel").text
 	_check(countdown.begins_with("⏳ ") and countdown.ends_with("m") and "h " in countdown, "geri sayım (%s)" % countdown)
@@ -238,7 +238,7 @@ func _test_home_screen(main: Control) -> void:
 
 	# CHECK-IN.
 	var check_in: BaseButton = view.get_node("%CheckInButton")
-	_check(not check_in.disabled and "CHECK-IN" in check_in.caption and "+15" in check_in.caption, "CHECK-IN hazır")
+	_check(not check_in.disabled and "SET SAIL!" in check_in.caption and "+15" in check_in.caption, "CHECK-IN hazır")
 	bananas = _dm.data.bananas
 	_stop_all_sounds()
 	await _click(check_in.get_global_rect().get_center())
@@ -283,7 +283,7 @@ func _test_focus_screen(main: Control) -> void:
 	var timer: Control = main.get_node("%TimerView")
 	var stop: BaseButton = timer.get_node("%StopButton")
 	var start: Button = timer.get_node("%StartButton")
-	_check("Focus With Monke" in _all_text(timer), "başlık")
+	_check("Focus With Luffy" in _all_text(timer), "başlık")
 	_check(timer.get_node("%FocusScene").is_processing(), "ateş animasyonu açık")
 	_check(start.visible and not stop.visible and timer.get_node("%Presets").visible, "boşta BAŞLAT görünür")
 
@@ -291,7 +291,7 @@ func _test_focus_screen(main: Control) -> void:
 	await _frames(2)
 	_check(not timer._tick_timer.is_stopped(), "sayaç başlar")
 	_check(stop.visible and not start.visible and not timer.get_node("%Presets").visible, "çalışırken STOP görünür")
-	_check(timer.get_node("%StatusLabel").text == "Monke is locked in.", "kilitlenme metni")
+	_check(timer.get_node("%StatusLabel").text == "Luffy is locked in. Training his Haki on Rusukaina!", "kilitlenme metni")
 	_check(timer.get_node("%SonicMonkey").writing, "maymun yazar")
 
 	# Sayaç başka süreye sarmış olsun; STOP sıfırlar ve ödül vermez.

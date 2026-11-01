@@ -4,8 +4,8 @@ const DEFAULT_MINUTES := 25
 const SECONDS_PER_MINUTE := 60
 const SOUND_ON_ICON := "🔊"
 const SOUND_OFF_ICON := "🔇"
-const LOCKED_IN_TEXT := "Monke is locked in."
-const READY_TEXT := "Monke is ready."
+const LOCKED_IN_TEXT := "Luffy is locked in. Training his Haki on Rusukaina!"
+const READY_TEXT := "Luffy is ready to train."
 
 var _selected_minutes := DEFAULT_MINUTES
 var _remaining_seconds := DEFAULT_MINUTES * SECONDS_PER_MINUTE

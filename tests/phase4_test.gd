@@ -6,7 +6,7 @@ const MAIN_SCENE := "res://scenes/main.tscn"
 const MIN_TOUCH_SIZE := 48.0
 const SOUND_NAMES: Array[String] = ["banana", "complete", "timer_finish", "pop", "click"]
 # Arayüzde kullanılan emojilerin tamamı.
-const UI_EMOJI := "⏱⏳⛵⛺✅✖❓➕⬜🌱🌴🌺🍌🎖🎯🏅🏆🏝🐵💎📊🔊🔇🔥🗑🛍"
+const UI_EMOJI := "⏱⏳⛵⛺✅✖❓➕⬜🌱🌴🌺🍌🎖🎯🏅🏆🏝🐵💎📊🔊🔇🔥🗑🛍🍖🍈📦🏴☠👒⚔🌀🦌⚡"
 
 var _failures := 0
 var _checks := 0

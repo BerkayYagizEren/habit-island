@@ -12,8 +12,8 @@ const PRIORITY_COLORS: Dictionary[String, Color] = {
 	"medium": Color("#facc15"),
 	"low": Color("#f8fafc"),
 }
-const CHECK_IN_TEXT := "CHECK-IN  🍌 +%d"
-const CHECKED_IN_TEXT := "CHECK-IN ✅"
+const CHECK_IN_TEXT := "SET SAIL! 🏴‍☠  +%d 🍖"
+const CHECKED_IN_TEXT := "SET SAIL! ✅"
 
 var _just_toggled_id := ""
 var _pending_delete_id := ""

@@ -13,12 +13,13 @@ const SHADOW_COLOR := Color(0.05, 0.2, 0.15, 0.32)
 const LIFTED_SHADOW_OFFSET := Vector2(0, 18)
 const LIFTED_SHADOW_COLOR := Color(0.05, 0.2, 0.15, 0.18)
 const UNKNOWN_ICON := "❓"
-const SONIC_MONKEY := preload("res://scripts/sonic_monkey.gd")
+const CREW_MONKEY := preload("res://scripts/crew_monkey.gd")
 const MONKEY_SCALE := Vector2(0.72, 0.72)
 const CAMPFIRE_FLAME := preload("res://scripts/campfire_flame.gd")
 const CAMPFIRE_OFFSET := Vector2(0, 34)
 # Etiket döndürülür ve esnetilir; tabanı yerde kalır, HitArea ve dokunma sınırı değişmez.
 const EMOJI_PIVOT := Vector2(56, 100)
+const SWAY_ITEMS: Array[String] = ["palm", "jolly_roger"]
 const SWAY_ANGLE := 0.07
 const SWAY_SPEED := 1.5
 # Bu kadar az oynayıp kısa sürede bırakılan basış sürükleme değil dokunuştur.
@@ -70,7 +71,7 @@ func _ready() -> void:
 		_add_campfire()
 	else:
 		_emoji.text = entry.get("icon", UNKNOWN_ICON)
-	set_process(item_type == "palm")
+	set_process(item_type in SWAY_ITEMS)
 	_hit_area.gui_input.connect(_on_hit_area_gui_input)
 
 
@@ -92,7 +93,7 @@ func _notification(what: int) -> void:
 
 
 func _add_monkey(variant: String) -> void:
-	_monkey = SONIC_MONKEY.new(variant)
+	_monkey = CREW_MONKEY.create(variant)
 	_monkey.scale = MONKEY_SCALE
 	add_child(_monkey)
 	_visual = _monkey
@@ -187,7 +188,7 @@ func _create_bubble() -> Node2D:
 	style.set_corner_radius_all(BUBBLE_CORNER)
 
 	var label := Label.new()
-	label.text = BUBBLE_TEXT
+	label.text = DataManager.ISLAND_ITEMS.get(item_type, {}).get("bubble", BUBBLE_TEXT)
 	label.position = BUBBLE_RECT.position
 	label.size = BUBBLE_RECT.size
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
